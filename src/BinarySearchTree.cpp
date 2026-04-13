@@ -141,13 +141,47 @@ bool BinarySearchTree::is_empty() const {
 //   - this node has no smaller value in its subtree
 //   - find_min_ is used by remove_ to locate the in-order successor
 //
-Node* BinarySearchTree::find_min_(Node* node) const {
-	while (node->left != nullptr) {
-        node = node->left;
-    }
-    return nullptr;
-}
+Node* BinarySearchTree::remove_(Node* node, int value, bool& removed) {
+    if (node == nullptr)
+        return nullptr;
 
+    if (value < node->data) {
+        node->left = remove_(node->left, value, removed);
+    }
+    else if (value > node->data) {
+        node->right = remove_(node->right, value, removed);
+    }
+    else {
+        removed = true;
+
+        // Case 1: no children
+        if (node->left == nullptr && node->right == nullptr) {
+            delete node;
+            return nullptr;
+        }
+
+        // Case 2: one child
+        if (node->left == nullptr) {
+            Node* temp = node->right;
+            delete node;
+            return temp;
+        }
+
+        if (node->right == nullptr) {
+            Node* temp = node->left;
+            delete node;
+            return temp;
+        }
+
+        // Case 3: two children
+        Node* successor = find_min_(node->right);
+        node->data = successor->data;
+
+        node->right = remove_(node->right, successor->data, removed);
+    }
+
+    return node;  // ✅ IMPORTANT
+}
 // =============================================================================
 // 8. remove / remove_
 // =============================================================================
