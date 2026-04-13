@@ -141,6 +141,44 @@ bool BinarySearchTree::is_empty() const {
 //   - this node has no smaller value in its subtree
 //   - find_min_ is used by remove_ to locate the in-order successor
 //
+Node* BinarySearchTree::find_min_(Node* node) const {
+    while (node->left != nullptr) {
+        node = node->left;
+    }
+    return node;
+}
+// =============================================================================
+// 8. remove / remove_
+// =============================================================================
+
+// ---------------------------------------------------------------------------
+// remove() — public wrapper
+// ---------------------------------------------------------------------------
+bool BinarySearchTree::remove(int value) {
+    bool removed = false;
+    root_ = remove_(root_, value, removed);
+    return removed;
+}
+
+// ---------------------------------------------------------------------------
+// remove_() — recursive remove (three cases)
+// ---------------------------------------------------------------------------
+//
+// ? SEE DIAGRAM: images/cpp_diagrams.md #2-4 — all three remove cases with code
+//
+// ! DISCUSSION: Removing a node has three cases based on its children.
+//   - Case 1 — leaf (no children): simply delete it, return nullptr to parent
+//   - Case 2 — one child: bypass the node, return its only child to parent
+//   - Case 3 — two children: the tricky case — see below
+//
+// ! DISCUSSION: Case 3 — two children — the key insight.
+//   - we cannot just delete the node; it has two subtrees to preserve
+//   - solution: find the in-order successor (minimum of the RIGHT subtree)
+//   - the successor is the smallest value that is still LARGER than node->data
+//   - copy the successor's value into the current node (no pointer changes)
+//   - then delete the successor from the right subtree (it has at most one child)
+//   - the BST property is maintained throughout
+//
 Node* BinarySearchTree::remove_(Node* node, int value, bool& removed) {
     if (node == nullptr)
         return nullptr;
@@ -180,73 +218,5 @@ Node* BinarySearchTree::remove_(Node* node, int value, bool& removed) {
         node->right = remove_(node->right, successor->data, removed);
     }
 
-    return node;  // ✅ IMPORTANT
-}
-// =============================================================================
-// 8. remove / remove_
-// =============================================================================
-
-// ---------------------------------------------------------------------------
-// remove() — public wrapper
-// ---------------------------------------------------------------------------
-bool BinarySearchTree::remove(int value) {
-    bool removed = false;
-    root_ = remove_(root_, value, removed);
-    return removed;
-}
-
-// ---------------------------------------------------------------------------
-// remove_() — recursive remove (three cases)
-// ---------------------------------------------------------------------------
-//
-// ? SEE DIAGRAM: images/cpp_diagrams.md #2-4 — all three remove cases with code
-//
-// ! DISCUSSION: Removing a node has three cases based on its children.
-//   - Case 1 — leaf (no children): simply delete it, return nullptr to parent
-//   - Case 2 — one child: bypass the node, return its only child to parent
-//   - Case 3 — two children: the tricky case — see below
-//
-// ! DISCUSSION: Case 3 — two children — the key insight.
-//   - we cannot just delete the node; it has two subtrees to preserve
-//   - solution: find the in-order successor (minimum of the RIGHT subtree)
-//   - the successor is the smallest value that is still LARGER than node->data
-//   - copy the successor's value into the current node (no pointer changes)
-//   - then delete the successor from the right subtree (it has at most one child)
-//   - the BST property is maintained throughout
-//
-Node* BinarySearchTree::remove_(Node* node, int value, bool& removed) {
-	if (!node) return nullptr;
-    return nullptr;
-
-    if (value < node->data) {
-        node->left = remove_(node->left, value, removed);
-    } else if (value > node->data) {
-        node->right = remove_(node->right, value, removed);
-    } else {
-        // Node to remove found
-        removed = true;
-        // Case 1: No children
-        if (!node->left && !node->right) {
-            delete node;
-            return nullptr;
-        }
-        // Case 2: One child
-        else if (!node->left) {
-            Node* temp = node->right;
-            delete node;
-            return temp;
-        } else if (!node->right) {
-            Node* temp = node->left;
-            delete node;
-            return temp;
-        }
-        // Case 3: Two children
-        else {
-            Node* successor = find_min_(node->right);
-            node->data = successor->data;
-            node->right = remove_(node->right, successor->data, removed); // Remove successor
-        }
-	}
-
-    return nullptr;
+    return node;   
 }
